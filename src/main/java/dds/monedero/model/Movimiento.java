@@ -3,7 +3,7 @@ package dds.monedero.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class Movimiento {
+abstract class Movimiento {
   private LocalDate fecha;
   private BigDecimal monto;
   private boolean esDeposito;
@@ -22,14 +22,6 @@ public class Movimiento {
     return fecha;
   }
 
-  public boolean fueDepositado(LocalDate fecha) {
-    return isDeposito() && esDeLaFecha(fecha);
-  }
-
-  public boolean fueExtraido(LocalDate fecha) {
-    return isExtraccion() && esDeLaFecha(fecha);
-  }
-
   public boolean esDeLaFecha(LocalDate fecha) {
     return this.fecha.equals(fecha);
   }
@@ -42,17 +34,9 @@ public class Movimiento {
     return !esDeposito;
   }
 
-  public void agregateA(Cuenta cuenta) {
-    cuenta.setSaldo(calcularValor(cuenta));
-    cuenta.agregarMovimiento(this);
-  }
+  abstract void operacionValida(BigDecimal monto, Cuenta cuenta);
 
-  public BigDecimal calcularValor(Cuenta cuenta) {
-    if (esDeposito) {
-      return cuenta.getSaldo().add(getMonto());
-    } else {
-      return cuenta.getSaldo().subtract(getMonto());
-    }
-  }
+  abstract BigDecimal montoModificador();
 }
+
 

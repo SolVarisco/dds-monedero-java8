@@ -36,7 +36,7 @@ public class Cuenta {
       throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
     }
 
-    new Movimiento(LocalDate.now(), cuanto, true).agregateA(this);
+    agregarMovimiento(new Deposito(LocalDate.now(), cuanto));
   }
 
   public void sacar(BigDecimal cuanto) {
@@ -52,10 +52,12 @@ public class Cuenta {
       throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + 1000
           + " diarios, límite: " + limite);
     }
-    new Movimiento(LocalDate.now(), cuanto, false).agregateA(this);
+    agregarMovimiento(new Extraccion(LocalDate.now(), cuanto));
   }
 
+
   public void agregarMovimiento(Movimiento movimiento) {
+    actualizarSaldo(movimiento);
     movimientos.add(movimiento);
   }
 
@@ -64,6 +66,24 @@ public class Cuenta {
         .filter(movimiento -> !movimiento.isDeposito() && movimiento.getFecha().equals(fecha))
         .map(Movimiento::getMonto)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  public void depositoValido(BigDecimal monto){
+    if (getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= 3) {
+      throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
+    }
+  }
+
+  public void extraccionValida(BigDecimal monto){
+    if (getSaldo().subtract(monto).compareTo(new BigDecimal(0)) == -1) {
+      throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
+    }
+    BigDecimal montoExtraidoHoy = getMontoExtraidoA(LocalDate.now());
+    BigDecimal limite = new BigDecimal(1000).subtract(montoExtraidoHoy);
+    if (monto.compareTo(limite) == 1) {
+      throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + 1000
+          + " diarios, límite: " + limite);
+    }
   }
 
   public List<Movimiento> getMovimientos() {
@@ -78,4 +98,7 @@ public class Cuenta {
     this.saldo = saldo;
   }
 
+  public void actualizarSaldo(Movimiento movimiento) {
+    saldo = saldo.add(movimiento.montoModificador());
+  }
 }
