@@ -107,7 +107,7 @@ public class MonederoTest {
   public void LosMontosExtraidosNoSeSUmanEnCasoDeHaberseRealizadoEnDistintosDias(){
     cuenta.setSaldo(new BigDecimal(5000));
     cuenta.sacar(new BigDecimal(300));
-    cuenta.agregarMovimiento(LocalDate.now().minusDays(20), new BigDecimal(400), false);
+    cuenta.agregarMovimiento(new Movimiento(LocalDate.now().minusDays(20), new BigDecimal(400), false));
     assertEquals(cuenta.getMontoExtraidoA(LocalDate.now().minusDays(20)), new BigDecimal(400));
   }
 
