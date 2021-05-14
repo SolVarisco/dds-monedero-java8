@@ -28,33 +28,20 @@ public class Cuenta {
   }
 
   public void poner(BigDecimal cuanto) {
-    if (cuanto.compareTo(new BigDecimal(0)) != 1) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
-    }
-
-    if (getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= 3) {
-      throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
-    }
-
-    agregarMovimiento(new Deposito(LocalDate.now(), cuanto));
+    realizarOperacion(new Deposito(LocalDate.now(), cuanto));
   }
 
   public void sacar(BigDecimal cuanto) {
-    if (cuanto.compareTo(new BigDecimal(0)) != 1) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
-    }
-    if (getSaldo().subtract(cuanto).compareTo(new BigDecimal(0)) == -1) {
-      throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
-    }
-    BigDecimal montoExtraidoHoy = getMontoExtraidoA(LocalDate.now());
-    BigDecimal limite = new BigDecimal(1000).subtract(montoExtraidoHoy);
-    if (cuanto.compareTo(limite) == 1) {
-      throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + 1000
-          + " diarios, límite: " + limite);
-    }
-    agregarMovimiento(new Extraccion(LocalDate.now(), cuanto));
+    realizarOperacion(new Extraccion(LocalDate.now(), cuanto));
   }
 
+  private void realizarOperacion(Movimiento movimiento){
+    if (movimiento.getMonto().compareTo(new BigDecimal(0)) != 1) {
+      throw new MontoNegativoException(movimiento.getMonto() + ": el monto a ingresar debe ser un valor positivo");
+    }
+    movimiento.operacionValida(this);
+    agregarMovimiento(movimiento);
+  }
 
   public void agregarMovimiento(Movimiento movimiento) {
     actualizarSaldo(movimiento);
@@ -63,12 +50,12 @@ public class Cuenta {
 
   public BigDecimal getMontoExtraidoA(LocalDate fecha) {
     return getMovimientos().stream()
-        .filter(movimiento -> !movimiento.isDeposito() && movimiento.getFecha().equals(fecha))
+        .filter(movimiento -> movimiento.isExtraccion() && movimiento.getFecha().equals(fecha))
         .map(Movimiento::getMonto)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
-  public void depositoValido(BigDecimal monto){
+  public void depositoValido(){
     if (getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= 3) {
       throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
     }

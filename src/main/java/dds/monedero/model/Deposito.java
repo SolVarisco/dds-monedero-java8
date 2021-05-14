@@ -10,8 +10,8 @@ public class Deposito extends Movimiento{
   }
 
   @Override
-  void operacionValida(BigDecimal monto, Cuenta cuenta){
-    cuenta.depositoValido(monto);
+  void operacionValida(Cuenta cuenta){
+    cuenta.depositoValido();
   }
 
   @Override

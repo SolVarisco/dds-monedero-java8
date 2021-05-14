@@ -10,8 +10,8 @@ public class Extraccion extends Movimiento{
   }
 
   @Override
-  void operacionValida(BigDecimal monto, Cuenta cuenta) {
-    cuenta.extraccionValida(monto);
+  void operacionValida(Cuenta cuenta) {
+    cuenta.extraccionValida(getMonto());
   }
 
   @Override

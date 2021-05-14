@@ -34,7 +34,7 @@ abstract class Movimiento {
     return !esDeposito;
   }
 
-  abstract void operacionValida(BigDecimal monto, Cuenta cuenta);
+  abstract void operacionValida(Cuenta cuenta);
 
   abstract BigDecimal montoModificador();
 }
